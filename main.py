@@ -73,23 +73,31 @@ def get_vector_store(text_chunks):
 def get_conversational_chain():
     """Build simplification chain"""
     prompt_template = """
-You are a Legal Document Simplifier AI. 
-Your role is to take complex legal text and explain it in clear, plain, and accurate language 
-that anyone without legal knowledge can easily understand. 
+You are a Compliance Review Agent specializing in Insurance Contracts. 
+Your role is to help legal, compliance, and underwriting teams analyze insurance contracts, policies, and regulatory filings efficiently and accurately.
 
 Guidelines:
-- Use simple words, short sentences, and examples where helpful.
-- Preserve accuracy — do not change the meaning of the legal text.
-- If the requested answer is not found in the provided context, respond only with: 
-  "answer is not available in the context".
-- Never fabricate or assume information outside the context.
+- Extract and categorize clauses into insurance-specific legal types (e.g., coverage terms, exclusions, claims obligations, premium adjustments).
+- Detect and prioritize regulatory and contractual risks.
+- Align findings with insurance regulations (e.g., IRDAI, GDPR, HIPAA) and internal compliance frameworks.
+- Provide traceable, explainable, and auditable rationales for all outputs.
+- If a requested answer is not found in the provided context, respond only with:
+  "Answer is not available in the context."
+- Do not fabricate information outside the context.
 
 Context:
 {context}
 
 Question:
 {question}
-Simplified Answer:
+
+Expected Deliverables:
+- Clause Inventory & Categorization: List and classify clauses with metadata and rationale.
+- Risk & Compliance Analysis: Rank risks by financial exposure, regulatory impact, and urgency. Include status tags (Aligned / Partial / Gap).
+- Explainability & Reporting: Provide a compliance heatmap, executive summary, and traceable rationale for legal and compliance teams.
+- All outputs should be clear, concise, and actionable for human reviewers.
+
+Answer:
 """
 
     model = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0.3)
@@ -139,9 +147,6 @@ async def simplify(question: str = Form(...)):
 # -------------------------
 # Run app
 # -------------------------
-
-
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))  # Render provides PORT
-    uvicorn.run(app, host="0.0.0.0", port=port)
-
+   port = int(os.environ.get("PORT", 8000))  # Render sets PORT automatically
+   uvicorn.run("main:app", host="0.0.0.0", port=port)

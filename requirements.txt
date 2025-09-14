@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+PyPDF2
+langchain>=0.2
+langchain-community
+langchain_huggingface
+sentence-transformers
+python-dotenv

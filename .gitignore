@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environments
+.env
+.venv/
+venv/
+ENV/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# FAISS index
+faiss_index/
+*.faiss
+*.pkl
+
+# Environment variables
+.env
+.env.*
+
+# Static build artifacts
+static/*.js
+static/*.css
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Misc
+*.sqlite3
+*.db
+
+# Node
+node_modules/
+
+# Test output
+htmlcov/
+coverage.xml
+
+# Others
+*.bak
+*.swp
+*.swo
+
+# Ignore requirements lock files
+poetry.lock
+Pipfile.lock

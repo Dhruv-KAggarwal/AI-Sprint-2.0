@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lawgic AI - Legal Document Simplifier</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #f7f2e7;
+    }
+
+    .lawgic-scroll::-webkit-scrollbar {
+      width: 8px;
+      background: #e5d3b3;
+    }
+
+    .lawgic-scroll::-webkit-scrollbar {
+      width: 8px;
+      background: #e5d3b3;
+    }
+
+    .lawgic-scroll::-webkit-scrollbar-thumb {
+      background: #251c1a;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body class="h-screen w-screen flex flex-col bg-[#f3eee5]">
+  <div class="flex flex-1 h-full w-full">
+    <!-- Sidebar -->
+    <aside class="hidden md:flex flex-col w-80 bg-[#251c1a] text-[#f3eee5] p-8 space-y-8 min-h-full">
+      <div class="text-2xl font-bold mb-6">Lawgic Control Panel</div>
+      <div>
+        <div class="font-semibold text-lg mb-2">Upload Documents</div>
+        <div class="text-sm mb-2">Select PDF files to analyze</div>
+        <div class="bg-[#18100e] rounded-xl p-4 mb-4 flex flex-col items-center border border-[#3d2c28]">
+          <div class="mb-2 text-[#e5d3b3]">Drag and drop files here</div>
+          <div class="mb-2 text-xs text-[#b8a48c]">• PDF</div>
+          <input type="file" id="pdfFile" accept="application/pdf" class="hidden" onchange="showFileName()" />
+          <label for="pdfFile" id="fileLabel"
+            class="inline-block px-4 py-2 bg-[#2d1e1b] text-[#f3eee5] rounded-lg cursor-pointer border border-[#3d2c28] hover:bg-[#3d2c28] transition">Browse
+            files</label>
+          <span id="fileName" class="mt-2 text-xs text-[#b8a48c] truncate w-full text-center"></span>
+        </div>
+        <button onclick="uploadPDF()"
+          class="w-full bg-[#bfa77a] hover:bg-[#a08c6a] text-[#251c1a] font-semibold py-2 rounded-lg transition mb-2">Process
+          Documents</button>
+        <p id="uploadStatus" class="text-xs mt-2 text-[#e5d3b3]"></p>
+      </div>
+      <div class="mt-auto">
+        <div class="font-semibold mb-2 text-lg text-[#e5d3b3]">How to Use</div>
+        <ol class="list-decimal list-inside text-xs text-[#e5d3b3] space-y-1 pl-2">
+          <li>Upload your PDF document.</li>
+          <li>Click <span class="font-semibold text-[#bfa77a]">Process Documents</span>.</li>
+          <li>Ask your legal question in the chat below.</li>
+        </ol>
+        <div class="mt-3 text-xs text-[#b8a48c]">Get instant, simplified answers from your legal documents.</div>
+      </div>
+    </aside>
+    <!-- Main Chat Area -->
+    <main class="flex-1 flex flex-col h-full w-full items-center justify-between px-2 md:px-0">
+      <div class="w-full max-w-6xl mx-auto flex flex-col items-center mt-2 mb-1 px-2">
+        <h1 class="text-4xl font-extrabold text-[#251c1a] mb-1 tracking-tight text-center w-full">Lawgic - DocAnalyzer
+        </h1>
+        <div class="text-[#7c5a3a] italic mb-2 text-center w-full">Think Law Think Logic</div>
+        <div id="chat-window"
+          class="lawgic-scroll w-full bg-[#f3eee5] border border-[#e5d3b3] rounded-xl p-6 min-h-[68vh] max-h-[78vh] overflow-y-auto shadow-inner text-[#251c1a] text-base flex flex-col gap-4 transition-all duration-300"
+          style="word-break: break-word; overflow-x: auto;">
+          <div class="text-[#b8a48c] italic">Your conversation will appear here after you ask a question.</div>
+        </div>
+      </div>
+      <form id="chat-form"
+        class="w-full max-w-4xl mx-auto flex items-center gap-2 mb-4 px-2 sticky bottom-0 bg-[#f3eee5] pb-2 z-10"
+        onsubmit="event.preventDefault(); askQuestion();">
+        <input id="question" type="text" placeholder="e.g., What are the key points in this judgment?"
+          class="flex-1 border-2 border-[#251c1a] rounded-lg px-4 py-3 bg-[#f3eee5] text-[#251c1a] focus:outline-none focus:ring-1 focus:ring-[#251c1a] text-base shadow-sm"
+          autocomplete="off" />
+        <button type="submit"
+          class="bg-[#251c1a] hover:bg-[#3d2c28] text-[#f3eee5] font-semibold px-6 py-3 rounded-lg transition text-base">Send</button>
+      </form>
+    </main>
+  </div>
+  <script>
+    // File upload logic
+    function showFileName() {
+      const fileInput = document.getElementById('pdfFile');
+      const fileName = fileInput.files.length ? fileInput.files[0].name : '';
+      document.getElementById('fileName').textContent = fileName;
+    }
+    async function uploadPDF() {
+      const fileInput = document.getElementById("pdfFile");
+      if (!fileInput.files.length) {
+        alert("Please select a PDF file!");
+        return;
+      }
+      document.getElementById("uploadStatus").innerText = "Uploading...";
+      const formData = new FormData();
+      formData.append("pdf", fileInput.files[0]);
+      const res = await fetch("http://localhost:8000/upload-pdf/", {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+      document.getElementById("uploadStatus").innerText = data.status;
+    }
+    // Chat logic
+    let chatHistory = [];
+    let isLoading = false;
+    function renderChat() {
+      const chatWindow = document.getElementById('chat-window');
+      let content = '';
+      if (chatHistory.length === 0) {
+        content = '<div class="text-[#b8a48c] italic">Your conversation will appear here after you ask a question.</div>';
+      } else {
+        content = chatHistory.map(msg => `<div class="${msg.role === 'user' ? 'text-right' : 'text-left'}"><span class="inline-block px-4 py-2 rounded-xl ${msg.role === 'user' ? 'bg-[#251c1a] text-[#f3eee5]' : 'bg-[#e5d3b3] text-[#251c1a]'} max-w-full break-words whitespace-pre-line">${msg.text}</span></div>`).join('');
+      }
+      if (isLoading) {
+        content += '<div class="text-left"><span class="inline-block px-4 py-2 rounded-xl bg-[#e5d3b3] text-[#251c1a] max-w-[80%] animate-pulse">Lawgic AI is analyzing...</span></div>';
+      }
+      chatWindow.innerHTML = content;
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+    async function askQuestion() {
+      const input = document.getElementById("question");
+      const question = input.value.trim();
+      if (!question) {
+        alert("Please enter a question!");
+        return;
+      }
+      chatHistory.push({ role: 'user', text: question });
+      isLoading = true;
+      renderChat();
+      input.value = "";
+      const formData = new FormData();
+      formData.append("question", question);
+      try {
+        const res = await fetch("http://localhost:8000/simplify/", {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        // Remove stars from the response
+        let answer = (data.answer || '').replace(/\*+/g, '').trim();
+        chatHistory.push({ role: 'bot', text: answer });
+      } finally {
+        isLoading = false;
+        renderChat();
+      }
+    }
+    renderChat();
+  </script>
+</body>
+
+</html>

@@ -8,3 +8,4 @@ langchain-google-genai
 langchain-openai
 sentence-transformers
 python-dotenv
+python-multipart
